@@ -1,5 +1,5 @@
 class ExplanationSelector:
-    def __init__(self,strategy_list=["Theory + Example1", "Example2", "Analogy"]):
+    def __init__(self,strategy_list=["Theory + Example", "Visual Diagram", "Real-world Analogy"]):
         self.strategy_list=strategy_list
     def get_style(self,failures):
         # 1. Calculate the last valid index (The Roof)
