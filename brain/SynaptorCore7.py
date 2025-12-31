@@ -3,6 +3,7 @@ from MultiSignalLogic3 import DifficultyAdjuster
 from ExplanationStyleSelector4 import ExplanationSelector
 from EngagementAware5 import EngagementMonitor
 from MultiStepPlanningAgent6 import LessonPlanner
+from LLM_interface import generate_explanation
 
 class Synaptor:
     def __init__(self):
@@ -14,7 +15,7 @@ class Synaptor:
         self.monitor = EngagementMonitor()
         print("✅ Systems Online.\n")
 
-    def process_interaction(self, student_response, time_taken, success, failures):
+    def process_interaction(self, student_response,concept,latency,time_taken, success, failures,engagement):
         """
         The Core Brain Loop:
         1. Check if user is awake (Engagement)
@@ -25,12 +26,12 @@ class Synaptor:
         
         # 1. Check Engagement 
         # We check this first. If they aren't engaged, nothing else matters.
-        engagement = self.monitor.check_status(student_response, time_taken)
+        # engagement = self.monitor.check_status(student_response, latency)
         if engagement == "low_engagement":
              return {
-                 "status": "alert",
+                 "status": "low focus",
                  "action": "simplify and reengage", 
-                 "reason": "User seems bored or unresponsive."
+                 "reason": "User seems bored , confuse or unresponsive."
              }
 
         # 2. Update the Plan 
@@ -45,49 +46,31 @@ class Synaptor:
         style = self.selector.get_style(failures)
 
         # 5. Return the Master Plan
-        return {
+        agent_decision= {
             "status": "normal",
             "next_step": next_step,
             "difficulty": diff_decision,
             "teaching_style": style
         }
+        explanation = generate_explanation(agent_decision,concept)
+
+        return {
+          **agent_decision,
+          "explanation": explanation
+}
 
 # <=== MAIN SIMULATION ===>
 if __name__ == "__main__":
     bot = Synaptor()
+# <============ USER'S INPUT ================>
+    c=input("ENTER CONCEPT : ")
+    l=int(input("ENTER LATENCY"))
+    tk=int(input("ENTER TIME TAKEN : "))
+    s=input("ENTER 'SUCCESS' OR 'FAILURE' : ")
+    f=int(input("ENTER NO. OF FAILURE : "))
+    e=input("ENTER ENGAGEMENT(low_engagement / high_engagement) : ")
+    sr=input("ENTER STUDENT RESPONSE : ")
+    result = bot.process_interaction(sr,c,l,tk,s,f,e)
+    print(result)
+
     
-    print(f"📘 Starting Lesson: {bot.planner.start_topic('variables')}")
-    print("=" * 50)
-
-    # --- Scenario 1: The Struggle ---
-    # User is slow (150s) and fails.
-    print("\n📢 Interaction 1: User fails and is slow.")
-    result1 = bot.process_interaction(
-        student_response="I don't get it...", 
-        time_taken=150, 
-        success=False, 
-        failures=1
-    )
-    print(f"🤖 AI Output: {result1}")
-
-    # --- Scenario 2: The Boredom ---
-    # User responds with one letter "k".
-    print("\n📢 Interaction 2: User says 'k'.")
-    result2 = bot.process_interaction(
-        student_response="k", 
-        time_taken=5, 
-        success=True, 
-        failures=0
-    )
-    print(f"🤖 AI Output: {result2}")
-
-    # --- Scenario 3: The Success ---
-    # User succeeds and is fast.
-    print("\n📢 Interaction 3: User succeeds.")
-    result3 = bot.process_interaction(
-        student_response="The variable stores the value 10.", 
-        time_taken=30, 
-        success=True, 
-        failures=0
-    )
-    print(f"🤖 AI Output: {result3}")

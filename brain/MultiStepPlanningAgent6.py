@@ -2,7 +2,7 @@ class LessonPlanner:
     def __init__(self):
         # Define the syllabus
         self.syllabus = {
-            "variables": ["concept", "example", "practice", "quiz"]
+            "0/1 knapsack problem": ["concept", "example", "practice", "quiz"]
         }
         self.plan = []
 
