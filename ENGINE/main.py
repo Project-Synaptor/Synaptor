@@ -2,10 +2,16 @@ from fastapi import FastAPI
 from database import engine
 import models
 from brain.brain_service import run_synaptor
-
+from fastapi.middleware.cors import CORSMiddleware
 # Create FastAPI app
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # ================= DATABASE SETUP =================
 models.Base.metadata.create_all(bind=engine)
 

@@ -1,186 +1,149 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NeuralBackground from "../components/neuralbackground";
-import { MoveRight } from 'lucide-react';
+import { MoveRight } from "lucide-react";
+
 const questions = [
   {
-    question: "Which is the largest animal in the world?",
-    answers: [
-      { text: "Shark", correct: false },
-      { text: "Blue Whale", correct: true },
-      { text: "Elephant", correct: false },
-      { text: "Cow", correct: false },
-    ],
+    concept: "Geography",
+    question: "What is the capital of India?",
+    options: ["Mumbai", "New Delhi", "Kolkata", "Chennai"],
+    correct: "New Delhi",
+    level: "easy"
   },
   {
-    question: "What is the capital of France?",
-    answers: [
-      { text: "Berlin", correct: false },
-      { text: "Madrid", correct: false },
-      { text: "Paris", correct: true },
-      { text: "Rome", correct: false },
-    ],
+    concept: "Geography",
+    question: "Which is the longest river in the world?",
+    options: ["Amazon", "Nile", "Yangtze", "Mississippi"],
+    correct: "Nile",
+    level: "easy"
   },
   {
-    question: "Which planet is known as the Red Planet?",
-    answers: [
-      { text: "Earth", correct: false },
-      { text: "Venus", correct: false },
-      { text: "Mars", correct: true },
-      { text: "Jupiter", correct: false },
-    ],
+    concept: "Geography",
+    question: "Which continent is the Sahara Desert located in?",
+    options: ["Asia", "Australia", "Africa", "South America"],
+    correct: "Africa",
+    level: "easy"
   },
   {
-    question: "Who wrote the play 'Romeo and Juliet'?",
-    answers: [
-      { text: "William Shakespeare", correct: true },
-      { text: "Mark Twain", correct: false },
-      { text: "Charles Dickens", correct: false },
-      { text: "Jane Austen", correct: false },
-    ],
+    concept: "Geography",
+    question: "Which country has the largest population in the world?",
+    options: ["India", "China", "USA", "Russia"],
+    correct: "India",
+    level: "easy"
   },
   {
-    question: "What is the boiling point of water at sea level?",
-    answers: [
-      { text: "90°C", correct: false },
-      { text: "100°C", correct: true },
-      { text: "80°C", correct: false },
-      { text: "70°C", correct: false },
-    ],
+    concept: "Geography",
+    question: "Which ocean is the largest on Earth?",
+    options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"],
+    correct: "Pacific Ocean",
+    level: "easy"
   },
   {
-    question: "Which gas do plants absorb from the atmosphere?",
-    answers: [
-      { text: "Oxygen", correct: false },
-      { text: "Carbon Dioxide", correct: true },
-      { text: "Nitrogen", correct: false },
-      { text: "Hydrogen", correct: false },
-    ],
+    concept: "Geography",
+    question: "Mount Everest lies on the border of which two countries?",
+    options: ["India and China", "Nepal and China", "Nepal and India", "Bhutan and China"],
+    correct: "Nepal and China",
+    level: "easy"
   },
   {
-    question: "Which is the smallest prime number?",
-    answers: [
-      { text: "1", correct: false },
-      { text: "2", correct: true },
-      { text: "3", correct: false },
-      { text: "5", correct: false },
-    ],
-  },
-  {
-    question: "What is the hardest natural substance on Earth?",
-    answers: [
-      { text: "Gold", correct: false },
-      { text: "Iron", correct: false },
-      { text: "Diamond", correct: true },
-      { text: "Silver", correct: false },
-    ],
-  },
-  {
-    question: "Which organ in the human body pumps blood?",
-    answers: [
-      { text: "Lungs", correct: false },
-      { text: "Brain", correct: false },
-      { text: "Heart", correct: true },
-      { text: "Liver", correct: false },
-    ],
-  },
-  {
-    question: "How many continents are there on Earth?",
-    answers: [
-      { text: "5", correct: false },
-      { text: "6", correct: false },
-      { text: "7", correct: true },
-      { text: "8", correct: false },
-    ],
-  },
+    concept: "Geography",
+    question: "Which is the smallest continent by land area?",
+    options: ["Europe", "Antarctica", "Australia", "South America"],
+    correct: "Australia",
+    level: "easy"
+  }
 ];
 
 export default function Quiz() {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
+  const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState(null);
-  const [showScore, setShowScore] = useState(false);
+  const [startTime, setStartTime] = useState(Date.now());
+  const [aiResponse, setAiResponse] = useState(null);
 
-  function handleAnswer(answer, index) {
+  useEffect(() => {
+    setStartTime(Date.now());
+  }, [index]);
+
+  async function handleAnswer(option) {
     if (selected !== null) return;
-    setSelected(index);
-    if (answer.correct) setScore(score + 1);
+
+    setSelected(option);
+
+    const q = questions[index];
+    const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+    const isCorrect = option === q.correct ? 1 : 0;
+
+    const payload = {
+      concept: q.concept,
+      time_taken: timeTaken,
+      latency: timeTaken,
+      attempts: 1,
+      hint_used: false,
+      correct: isCorrect,
+      question_level: q.level,
+      failures: isCorrect ? 0 : 1,
+      engagement: "high_engagement"
+    };
+
+    const res = await fetch("http://127.0.0.1:8000/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    setAiResponse(data);
+    localStorage.setItem("lastAIResponse", JSON.stringify(data));
   }
 
-  function handleNext() {
+  function nextQuestion() {
     setSelected(null);
-    if (currentQuestion + 1 < questions.length) {
-      setCurrentQuestion(currentQuestion + 1);
+    setAiResponse(null);
+
+    if (index + 1 < questions.length) {
+      setIndex(i => i + 1);
     } else {
-      setShowScore(true);
+      window.location.href = "/dashboard";
     }
   }
-
-  function restartQuiz() {
-    setCurrentQuestion(0);
-    setScore(0);
-    setSelected(null);
-    setShowScore(false);
-  }
+  const q = questions[index];
 
   return (
     <div className="bg-[#020616] min-h-screen w-screen flex items-center justify-center text-white relative">
       <NeuralBackground />
 
       <div className="relative z-10 w-[500px] bg-[#1b2233] rounded-xl p-8 shadow-xl">
-        <h1 className="text-3xl font-bold text-center mb-6">Simple Quiz</h1>
+        <h1 className="text-3xl font-bold text-center mb-6">
+          AI Interactive Assessment
+        </h1>
 
-        {showScore ? (
-          <div className="text-center">
-            <h2 className="text-2xl mb-4">
-              You scored {score} out of {questions.length}!
-            </h2>
+        <h2 className="text-xl mb-6">{q.question}</h2>
+
+        <div className="flex flex-col gap-3">
+          {q.options.map((opt, idx) => (
             <button
-              onClick={restartQuiz}
-              className="px-6 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 transition"
+              key={idx}
+              onClick={() => handleAnswer(opt)}
+              disabled={selected !== null}
+              className="px-4 py-3 rounded-lg text-left transition bg-[#0f172a] hover:bg-[#1e293b]"
             >
-              Play Again
+              {opt}
             </button>
-          </div>
-        ) : (
+          ))}
+        </div>
+
+        {aiResponse && (
           <>
-            <h2 className="text-xl mb-6">
-              {currentQuestion + 1}. {questions[currentQuestion].question}
-            </h2>
-
-            <div className="flex flex-col gap-3">
-              {questions[currentQuestion].answers.map((answer, index) => {
-                const isCorrect = answer.correct;
-                const isSelected = selected === index;
-
-                let buttonStyle =
-                  "bg-[#0f172a] hover:bg-[#1e293b]";
-
-                if (selected !== null) {
-                  if (isCorrect) buttonStyle = "bg-green-600";
-                  else if (isSelected) buttonStyle = "bg-red-600";
-                }
-
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswer(answer, index)}
-                    disabled={selected !== null}
-                    className={`px-4 py-3 rounded-lg text-left transition ${buttonStyle}`}
-                  >
-                    {answer.text}
-                  </button>
-                );
-              })}
+            <div className="mt-4 text-sm text-cyan-300">
+              Mastery: {aiResponse.mastery_level} | AI says: {aiResponse.difficulty}
             </div>
 
-            {selected !== null && (
-              <button
-                onClick={handleNext}
-                className="mt-6 w-25 p-3 rounded-lg bg-indigo-500 hover:bg-indigo-600 transition flex items-center justify-between"
-              >
-                Next <MoveRight />
-              </button>
-            )}
+            <button
+              onClick={nextQuestion}
+              className="mt-6 p-3 rounded-lg bg-indigo-500 hover:bg-indigo-600 transition flex items-center gap-2"
+            >
+              Next <MoveRight />
+            </button>
           </>
         )}
       </div>

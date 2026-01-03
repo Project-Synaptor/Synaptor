@@ -1,8 +1,8 @@
-from MultiSignalLogic3 import DifficultyAdjuster
-from ExplanationStyleSelector4 import ExplanationSelector
-from MultiStepPlanningAgent6 import LessonPlanner
-from ML_interface import predict_mastery, mastery_level
-from LLM_interface import generate_explanation
+from brain.MultiSignalLogic3 import DifficultyAdjuster
+from brain.ExplanationStyleSelector4 import ExplanationSelector
+from brain.MultiStepPlanningAgent6 import LessonPlanner
+from brain.ML_interface import predict_mastery, mastery_level
+from brain.LLM_interface import generate_explanation
 
 
 class Synaptor:
